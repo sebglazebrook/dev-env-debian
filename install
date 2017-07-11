@@ -1,0 +1,53 @@
+#!/bin/bash
+
+set -ue
+
+function log {
+  local message="$1"
+  echo "-- $message"
+}
+
+function execute_command {
+  local command_string=$1
+  echo "Executing--> $command_string"
+  eval "$command_string"
+}
+
+function clone_unless_cloned {
+  local remote_path="$1"
+  local local_directory="$2"
+  local post_clone_command="${3:-''}"
+  if [ -d "$local_directory" ]; then
+    log "$local_directory already exists skipping"
+  else
+    execute_command "git clone $remote_path $local_directory"
+    eval "$post_clone_command"
+  fi
+}
+
+log "Installing git"
+execute_command "sudo apt-get install --yes git"
+
+
+log "Installing dotfiles"
+
+clone_unless_cloned "https://github.com/sebglazebrook/dotfiles.git" "$HOME/.dotfiles" "$HOME/.dotfiles/setup"
+
+log "Adding sebglazebrook debian repo"
+if [ -f '/etc/apt/sources.list.d/sebglazebrook.list' ]; then
+  log "sebglazebrook debian repo already added skipping"
+else
+  LATEST_RELEASE="$(git ls-remote https://github.com/sebglazebrook/debian-pkg-repo.git | head -n 1 | awk '{ print $1 }')"
+  echo " deb http://cdn.rawgit.com/sebglazebrook/debian-pkg-repo/${LATEST_RELEASE} jessie main | sudo tee /etc/apt/sources.list.d/sebglazebrook.list"
+  sudo apt-get update
+fi
+
+log "Downloading deb packages"
+sudo apt-get install --yes $(cat packages.txt)
+
+log "Downloading git based packages"
+
+execute_command "mkdir -p $HOME/code"
+
+clone_unless_cloned "https://github.com/rupa/z.git" "$HOME/code/z"
+clone_unless_cloned "https://github.com/junegunn/fzf.git" "$HOME/code/fzf" "cd $HOME/code/fzf && ./install"

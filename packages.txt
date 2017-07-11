@@ -1,0 +1,6 @@
+vim
+tmux
+git
+aliases
+curl
+silversearcher-ag
