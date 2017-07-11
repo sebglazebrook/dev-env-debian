@@ -51,3 +51,10 @@ execute_command "mkdir -p $HOME/code"
 
 clone_unless_cloned "https://github.com/rupa/z.git" "$HOME/code/z"
 clone_unless_cloned "https://github.com/junegunn/fzf.git" "$HOME/code/fzf" "cd $HOME/code/fzf && ./install"
+
+log "Installing docker"
+execute_command 'curl -fsSL https://download.docker.com/linux/debian/gpg | sudo apt-key add -'
+execute_command 'sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"'
+execute_command 'sudo apt-get update'
+execute_command 'sudo apt-get install --yes docker-ce docker-compose'
+# Need to add the current user to the docker group ??
