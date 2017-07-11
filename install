@@ -9,7 +9,7 @@ function log {
 
 function execute_command {
   local command_string=$1
-  echo "Executing--> $command_string"
+  log "Executing--> $command_string"
   eval "$command_string"
 }
 
